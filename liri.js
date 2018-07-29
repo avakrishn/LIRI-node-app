@@ -218,15 +218,23 @@ function songPlaylist() {
 }
 
 function movieThis(){
-    var movieArr = process.argv.slice(3);
-    movieName = movieArr.join('+');
+    if(process.argv[3]){
+        var movieArr = process.argv.slice(3);
+        movieName = movieArr.join('+');
+    }
+    else{
+        movieName = "mr+nobody"
+    }
+    
 
     // console.log(movieName);
 
     var url = "http://www.omdbapi.com/?t="+ movieName + "&y=&plot=short&apikey=trilogy";
 
     // console.log(url);
+
     // Then run a request to the OMDB API with the movie specified
+    // use the request package to retrieve data from the OMDB API
     request(url, function(error, response, body) {
 
         // If the request is successful (i.e. if the response status code is 200)
