@@ -1,11 +1,16 @@
 // Read and set any environment variables with the dotenv package
 require("dotenv").config();
 
-var keys = require("./keys.js");
+// Grab the fs package to handle read/write/append
+var fs = require("fs");
+
+
 var request = require("request");
 var Twitter = require('twitter');
 var Spotify = require('node-spotify-api');
 var inquirer = require("inquirer");
+
+var keys = require("./keys.js");
 
 var spotify = new Spotify(keys.spotify);
 var client = new Twitter(keys.twitter);
@@ -19,20 +24,24 @@ var num = 0;
 
 switch (action) {
     case "my-tweets":
-      tweets();
-      break;
+        tweets();
+        break;
     
     case "spotify-this-song":
-      spotifyThis();
-      break;
+        spotifyThis();
+        break;
+
+    case "playlist":
+        songPlaylist();
+        break;
     
     case "movie-this":
-      movieThis();
-      break;
+        movieThis();
+        break;
     
     case "do-what-it-says":
-      says();
-      break;
+        says();
+        break;
 }
 
 
@@ -56,9 +65,9 @@ function spotifyThis(){
             // Output the song's name
             console.log(`The Song's Name: ${song}`);
             // Output a preview link of the song from Spotify
-            console.log(`A Preview Link of the Song from Spotify: ${link}`);
+            console.log(`A Preview Link of the Song, "${song}", from Spotify: ${link}`);
             // Output the album that the song is from
-            console.log(`Album containing ${song}: ${album}`);
+            console.log(`Album containing the Song, "${song}": ${album}`);
             console.log(`=======================================================`);
         
         });
@@ -97,15 +106,15 @@ function songSearch(sName, number){
         }else{
             console.log(`Artists: ${artist}`);
         }
-        
+
         // Output the song's name
         console.log(`The Song's Name: ${song}`);
 
         // Output a preview link of the song from Spotify
-        console.log(`A Preview Link of the Song from Spotify: ${link}`);
+        console.log(`A Preview Link of the Song, "${song}", from Spotify: ${link}`);
 
         // Output the album that the song is from
-        console.log(`Album containing the song "${song}": ${album}`);
+        console.log(`Album containing the Song, "${song}": ${album}`);
 
         // console.log(`=======================================================`);
         // console.log(songObj);
@@ -116,26 +125,79 @@ function songSearch(sName, number){
             // Here we ask the user to confirm.
             {
             type: "confirm",
-            message: "Is this the song you were thinking of? \n  =======================================================",
+            message: "Is this the song you are looking for?",
             name: "conf",
-            default: true
+            default: true,
             },
         ])
         .then(function(inquirerResponse) {
+            console.log(`=======================================================`);
             // console.log(inquirerResponse.conf); //if user picked y then conf is true if user picked n then conf is false
             if(!inquirerResponse.conf){
                 num++;
                 if(num<20){
-                    console.log(`..........................................................`);
-                    console.log(`Here is another song:`);
+                    console.log(`......................................................`);
+                    console.log(`Here's another song:`);
                     songSearch(songName, num);
                 }
                 else{
-                    console.log(`..........................................................`);
-                    return console.log("Please choose a different song.");
+                    console.log(`......................................................`);
+                    console.log("Please choose a different song.");
+                    return console.log(`......................................................`);
                 }
+                
+            }
+            else{
+                var songTrack = `"${song}" by ${artist}; `
+                fs.appendFile("playlist.txt", songTrack, function(err) {
+                    // append or add text to the end of the file
+                    // if playlist.txt does not exist then will create that file
+                    
+                    // If an error was experienced
+                    if (err) {
+                        console.log(err);
+        
+                    }
+                
+                    // If no error is experienced, we'll log the phrase below to our node console.
+                    else {
+                        console.log(`Awesome! The song, "${song}" by ${artist} was added to your Playlist. To view your Playlist type in the command: playlist.`);
+                        return console.log(`......................................................`);
+                    }
+                    
+                    });
                 
             }
         }); 
     });
+}
+
+function songPlaylist() {
+    fs.readFile("playlist.txt", "utf8", function(error, data) {
+        // data is type: string and contains all the content of playlist.txt
+        // error object will be undefined if no error, but will contain an error if there is an error
+        
+        // If the code experiences any errors it will log the error to the console.
+        if (error) {
+            return console.log(error);
+        }
+        
+        console.log(data);
+        //split method creates an array from the string where each element in the array is created by splitting the string at ";"
+        var dataArr = data.split(";");
+        console.log(dataArr);
+
+        console.log(`=======================================================`);
+        console.log(`Your Playlist:`)
+        console.log(`.......................................................`);
+    
+        // We will then display the content of the array as a playlist on each line.
+        for (k =0; k < dataArr.length-1; k++){
+            console.log(`#${parseInt(k)+1}: ${dataArr[k]}`);
+            console.log(`.......................................................`);
+        }
+        console.log(`=======================================================`);
+       
+        });
+        
 }
