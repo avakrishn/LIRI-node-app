@@ -19,6 +19,7 @@ var pro = process.argv;
 var action = process.argv[2];
 
 var songName = "";
+var movieName ="";
 var artistArray = [];
 var num = 0;
 
@@ -62,20 +63,30 @@ function spotifyThis(){
             console.log(`=======================================================`);
             // Output the artist(s) of the song
             console.log(`Artist: ${artist}`);
+            console.log(`.......................................................`);
+
             // Output the song's name
             console.log(`The Song's Name: ${song}`);
+            console.log(`.......................................................`);
+
             // Output a preview link of the song from Spotify
-            console.log(`A Preview Link of the Song, "${song}", from Spotify: ${link}`);
+            console.log(`A Preview Link of "${song}", from Spotify: ${link}`);
+            console.log(`.......................................................`);
+
             // Output the album that the song is from
-            console.log(`Album containing the Song, "${song}": ${album}`);
+            console.log(`Album containing "${song}": ${album}`);
             console.log(`=======================================================`);
         
         });
     }
     else{
-        for(i=3; i<pro.length; i++){
-            songName += pro[i] + " ";
-        }
+        var songArr = process.argv.slice(3);
+        songName = songArr.join(' ');
+        
+        // alternate way:
+        // for(i=3; i<pro.length; i++){
+        //     songName += pro[i] + " ";
+        // }
 
         songSearch(songName, num);
         
@@ -106,17 +117,21 @@ function songSearch(sName, number){
         }else{
             console.log(`Artists: ${artist}`);
         }
+        console.log(`.......................................................`);
 
         // Output the song's name
         console.log(`The Song's Name: ${song}`);
+        console.log(`.......................................................`);
+
 
         // Output a preview link of the song from Spotify
-        console.log(`A Preview Link of the Song, "${song}", from Spotify: ${link}`);
+        console.log(`A Preview Link of "${song}", from Spotify: ${link}`);
+        console.log(`.......................................................`);
 
         // Output the album that the song is from
-        console.log(`Album containing the Song, "${song}": ${album}`);
+        console.log(`Album containing "${song}": ${album}`);
 
-        // console.log(`=======================================================`);
+        console.log(`=======================================================`);
         // console.log(songObj);
 
         artistArray =[];
@@ -136,14 +151,14 @@ function songSearch(sName, number){
             if(!inquirerResponse.conf){
                 num++;
                 if(num<20){
-                    console.log(`......................................................`);
+                    console.log(`=======================================================`);
                     console.log(`Here's another song:`);
                     songSearch(songName, num);
                 }
                 else{
-                    console.log(`......................................................`);
+                    console.log(`=======================================================`);
                     console.log("Please choose a different song.");
-                    return console.log(`......................................................`);
+                    return console.log(`=======================================================`);
                 }
                 
             }
@@ -162,7 +177,7 @@ function songSearch(sName, number){
                     // If no error is experienced, we'll log the phrase below to our node console.
                     else {
                         console.log(`Awesome! The song, "${song}" by ${artist} was added to your Playlist. To view your Playlist type in the command: playlist.`);
-                        return console.log(`......................................................`);
+                        return console.log(`=======================================================`);
                     }
                     
                     });
@@ -200,4 +215,75 @@ function songPlaylist() {
        
         });
         
+}
+
+function movieThis(){
+    var movieArr = process.argv.slice(3);
+    movieName = movieArr.join('+');
+
+    // console.log(movieName);
+
+    var url = "http://www.omdbapi.com/?t="+ movieName + "&y=&plot=short&apikey=trilogy";
+
+    // console.log(url);
+    // Then run a request to the OMDB API with the movie specified
+    request(url, function(error, response, body) {
+
+        // If the request is successful (i.e. if the response status code is 200)
+        if (!error && response.statusCode === 200) {
+            // Parse the body of the site 
+            movieResult = JSON.parse(body);
+            var title = movieResult.Title;
+            var year = movieResult.Year;
+            var ratingIMDB = movieResult.Ratings[0].Value;
+            var ratingTom = movieResult.Ratings[1].Value;
+            var country = movieResult.Country;
+            var lang = movieResult.Language;
+            var plot = movieResult.Plot;
+            var actors = movieResult.Actors;
+
+            console.log(`=======================================================`);
+            console.log(`=======================================================`);
+
+            // Output the Title of the movie.
+            console.log(`Title of the movie: ${title}`);
+            console.log(`.......................................................`);
+
+            // Output the Year the movie came out.
+            console.log(`Year "${title}" came out: ${year}`);
+            console.log(`.......................................................`);
+
+            // Output the IMDB Rating of the movie.
+            console.log(`IMDB Rating of "${title}": ${ratingIMDB}`);
+            console.log(`.......................................................`);
+
+            // Output the Rotten Tomatoes Rating of the movie.
+            console.log(`Rotten Tomatoes Rating of "${title}": ${ratingTom}`);
+            console.log(`.......................................................`);
+
+            // Output the Country where the movie was produced.
+            console.log(`Country where "${title}" was produced: ${country}`);
+            console.log(`.......................................................`);
+
+            // Output the Language of the movie.
+            console.log(`Language of "${title}": ${lang}`);
+            console.log(`.......................................................`);
+
+            // Output the Plot of the movie.
+            console.log(`Plot of "${title}": ${plot}`);
+            console.log(`.......................................................`);
+
+            // Output the Actors in the movie.
+            console.log(`Actors in "${title}": ${actors}`);
+
+            console.log(`=======================================================`);
+            console.log(`=======================================================`);
+        }
+        else{
+            console.log(error);
+            console.log("Please try again.")
+        }
+    });
+
+
 }
