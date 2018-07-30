@@ -15,39 +15,43 @@ var keys = require("./keys.js");
 var spotify = new Spotify(keys.spotify);
 var client = new Twitter(keys.twitter);
 
-var pro = process.argv;
 var action = process.argv[2];
+var input = process.argv[3];
 
 var songName = "";
 var movieName ="";
 var artistArray = [];
 var num = 0;
 
-switch (action) {
-    case "my-tweets":
-        tweets();
-        break;
+function choice(){
+    switch (action) {
+        case "my-tweets":
+            tweets();
+            break;
+        
+        case "spotify-this-song":
+            spotifyThis();
+            break;
     
-    case "spotify-this-song":
-        spotifyThis();
-        break;
-
-    case "playlist":
-        songPlaylist();
-        break;
-    
-    case "movie-this":
-        movieThis();
-        break;
-    
-    case "do-what-it-says":
-        says();
-        break;
+        case "playlist":
+            songPlaylist();
+            break;
+        
+        case "movie-this":
+            movieThis();
+            break;
+        
+        case "do-what-it-says":
+            itSays();
+            break;
+    }
 }
+
+choice();
 
 
 function spotifyThis(){
-    if(!process.argv[3]){
+    if(input === undefined){
         songName = "The Sign"
         spotify.search({ type: 'track', query: songName }, function(error, data){
             if (error) {
@@ -79,6 +83,9 @@ function spotifyThis(){
         
         });
     }
+    else if (process.argv[2] === "do-what-it-says"){
+        songSearch(input, num);
+    }
     else{
         var songArr = process.argv.slice(3);
         songName = songArr.join(' ');
@@ -89,9 +96,7 @@ function spotifyThis(){
         // }
 
         songSearch(songName, num);
-        
     }
-
 }
 
 function songSearch(sName, number){
@@ -134,56 +139,68 @@ function songSearch(sName, number){
         console.log(`=======================================================`);
         // console.log(songObj);
 
-        artistArray =[];
+        if (process.argv[2] !== "do-what-it-says"){
+            artistArray =[];
 
-        inquirer.prompt([
-            // Here we ask the user to confirm.
-            {
-            type: "confirm",
-            message: "Is this the song you are looking for?",
-            name: "conf",
-            default: true,
-            },
-        ])
-        .then(function(inquirerResponse) {
-            console.log(`=======================================================`);
-            // console.log(inquirerResponse.conf); //if user picked y then conf is true if user picked n then conf is false
-            if(!inquirerResponse.conf){
-                num++;
-                if(num<20){
-                    console.log(`=======================================================`);
-                    console.log(`Here's another song:`);
-                    songSearch(songName, num);
+            inquirer.prompt([
+                // Here we ask the user to confirm.
+                {
+                    type: "confirm",
+                    message: "Is this the song you are looking for?",
+                    name: "correctSong",
+                    default: true,
+                },
+            ]).then(function(inquirerResponse) {
+                console.log(`=======================================================`);
+                // console.log(inquirerResponse.correctSong); //if user picked y then correctSong is true if user picked n then correctSong is false
+                if(!inquirerResponse.correctSong){
+                    inquirer.prompt([
+                        {
+                            type: "confirm",
+                            message: `Would you like me to search for a different "${song}" song?`,
+                            name: "searchAgain",
+                            default: true,
+                        },
+
+                    ]).then(function(inquirerResponse){
+                        if(inquirerResponse.searchAgain){
+                            num++;
+                            if(num<20){
+                                console.log(`=======================================================`);
+                                console.log(`Here's another song:`);
+                                songSearch(songName, num);
+                            }
+                            else{
+                                console.log(`=======================================================`);
+                                console.log("Please choose a different song.");
+                                return console.log(`=======================================================`);
+                            }
+                        }
+                    });
                 }
                 else{
-                    console.log(`=======================================================`);
-                    console.log("Please choose a different song.");
-                    return console.log(`=======================================================`);
+                    var songTrack = `"${song}" by ${artist}; `
+                    fs.appendFile("playlist.txt", songTrack, function(err) {
+                        // append or add text to the end of the file
+                        // if playlist.txt does not exist then will create that file
+                        
+                        // If an error was experienced
+                        if (err) {
+                            console.log(err);
+            
+                        }
+                    
+                        // If no error is experienced, we'll log the phrase below to our node console.
+                        else {
+                            console.log(`Awesome! The song, "${song}" by ${artist} was added to your Playlist. To view your Playlist use the command: 'playlist'.`);
+                            return console.log(`=======================================================`);
+                        }
+                        
+                        });
                 }
-                
-            }
-            else{
-                var songTrack = `"${song}" by ${artist}; `
-                fs.appendFile("playlist.txt", songTrack, function(err) {
-                    // append or add text to the end of the file
-                    // if playlist.txt does not exist then will create that file
-                    
-                    // If an error was experienced
-                    if (err) {
-                        console.log(err);
-        
-                    }
-                
-                    // If no error is experienced, we'll log the phrase below to our node console.
-                    else {
-                        console.log(`Awesome! The song, "${song}" by ${artist} was added to your Playlist. To view your Playlist type in the command: playlist.`);
-                        return console.log(`=======================================================`);
-                    }
-                    
-                    });
-                
-            }
-        }); 
+            }); 
+
+        }
     });
 }
 
@@ -218,12 +235,16 @@ function songPlaylist() {
 }
 
 function movieThis(){
-    if(process.argv[3]){
-        var movieArr = process.argv.slice(3);
-        movieName = movieArr.join('+');
+    if (input === undefined){
+        movieName = "mr+nobody"
+    }
+    else if(process.argv[2] == "do-what-it-says"){
+        var movieArr = input.split(" ");
+        movieName = movieArr.join("+");
     }
     else{
-        movieName = "mr+nobody"
+        var movieArr = process.argv.slice(3);
+        movieName = movieArr.join("+");
     }
     
 
@@ -294,4 +315,22 @@ function movieThis(){
     });
 
 
+}
+
+function itSays(){
+      // Using the `fs` Node package, LIRI will take the text inside of random.txt and then use it to call one of LIRI's commands.
+    fs.readFile("random.txt", "utf8", function(error, content) {
+        // data is type: string and contains all the content of playlist.txt
+        // error object will be undefined if no error, but will contain an error if there is an error
+        
+        // If the code experiences any errors it will log the error to the console.
+        if (error) {
+            return console.log(error);
+        }
+        
+        contentArr = content.split(',');
+        action = contentArr[0];
+        input = contentArr[1];
+        choice();
+        });
 }
