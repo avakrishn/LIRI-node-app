@@ -15,7 +15,7 @@ var keys = require("./keys.js");
 var spotify = new Spotify(keys.spotify);
 var client = new Twitter(keys.twitter);
 
-var action = process.argv[2];
+var command = process.argv[2];
 var input = process.argv[3];
 
 var songName = "";
@@ -23,8 +23,37 @@ var movieName ="";
 var artistArray = [];
 var num = 0;
 
+if(!command){
+    commands();
+    // please select an option
+    //would you like a list of the commands
+    
+}
+else{
+    choice();
+}
+
+function commands(){
+    console.log(`===============================================================================================================`);
+    console.log(`Here are the list of possible commands and their output:`);
+    console.log(`...............................................................................................................`);
+    console.log(`Command__________________________________________Output________________________________________________________`);
+    console.log(`...............................................................................................................`);
+    console.log(`"my-tweets"______________________________________last 20 tweets and when they were created`);
+    console.log(`...............................................................................................................`);
+    console.log(`"spotify-this-song" <song name here>_____________information about the song such as artist, album, preview link`);
+    console.log(`...............................................................................................................`);
+    console.log(`"playlist"_______________________________________playlist of songs created from "spotify-this-song" command`);
+    console.log(`...............................................................................................................`);
+    console.log(`"movie-this" <movie name here>___________________information about the movie such as year, rating, plot, actors`);
+    console.log(`...............................................................................................................`);
+    console.log(`"do-what-it-says"________________________________random command is executed`);
+    console.log(`...............................................................................................................`);
+    console.log(`===============================================================================================================`);
+}
+
 function choice(){
-    switch (action) {
+    switch (command) {
         case "my-tweets":
             tweets();
             break;
@@ -46,8 +75,6 @@ function choice(){
             break;
     }
 }
-
-choice();
 
 
 function spotifyThis(){
@@ -329,7 +356,7 @@ function itSays(){
         }
         
         contentArr = content.split(',');
-        action = contentArr[0];
+        command = contentArr[0];
         input = contentArr[1];
         choice();
         });
