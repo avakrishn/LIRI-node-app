@@ -76,6 +76,26 @@ function choice(){
     }
 }
 
+// This will show my last 20 tweets and when they were created at in the terminal/bash window.
+function tweets(){
+    var params = {screen_name: 'LIRI51505595'};
+    client.get('statuses/user_timeline', params, function(error, tweets, response) {
+        // console.log(response);
+        if (!error) {
+            console.log(`===========================================================================`);
+            for (l=0; l<20; l++){
+                var tweet = tweets[l].text;
+                var dateCreated = tweets[l].user.created_at;
+                console.log(`Tweet #${l+1}: ${tweet}`);
+                console.log(`Date created: ${dateCreated}`);
+                console.log("............................................................................");
+            }
+            console.log(`===========================================================================`)
+        //   console.log(tweets);
+        }
+      });
+}
+
 
 function spotifyThis(){
     if(input === undefined){
