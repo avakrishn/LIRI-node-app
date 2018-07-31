@@ -90,23 +90,42 @@ function spotifyThis(){
             var song =  songObj.name;
             var link = songObj.preview_url;
             var album = songObj.album.name;
-    
-            console.log(`=======================================================`);
-            // Output the artist(s) of the song
-            console.log(`Artist: ${artist}`);
-            console.log(`.......................................................`);
 
-            // Output the song's name
-            console.log(`The Song's Name: ${song}`);
-            console.log(`.......................................................`);
+            console.log(`===========================================================================`);
+            console.log(`Please enter a song name after the command 'spotify-this-song' to get an output like this:`)
 
-            // Output a preview link of the song from Spotify
-            console.log(`A Preview Link of "${song}", from Spotify: ${link}`);
-            console.log(`.......................................................`);
+            var musicLogArr = [`===========================================================================`, 
+            `Artist: ${artist}`,
+            `............................................................................`,
+            `The Song's Name: ${song}`,
+            `............................................................................`,
+            `A Preview Link of "${song}", from Spotify: ${link}`,
+            `............................................................................`,
+            `Album containing "${song}": ${album}`,
+            `===========================================================================`];
+            musicLog = musicLogArr.join('\n');
+            console.log(musicLog);
+            outputLog(musicLogArr);
 
-            // Output the album that the song is from
-            console.log(`Album containing "${song}": ${album}`);
-            console.log(`=======================================================`);
+            // another way to console log:
+
+
+            // console.log(`=======================================================`);
+            // // Output the artist(s) of the song
+            // console.log(`Artist: ${artist}`);
+            // console.log(`.......................................................`);
+
+            // // Output the song's name
+            // console.log(`The Song's Name: ${song}`);
+            // console.log(`.......................................................`);
+
+            // // Output a preview link of the song from Spotify
+            // console.log(`A Preview Link of "${song}", from Spotify: ${link}`);
+            // console.log(`.......................................................`);
+
+            // // Output the album that the song is from
+            // console.log(`Album containing "${song}": ${album}`);
+            // console.log(`=======================================================`);
         
         });
     }
@@ -141,30 +160,26 @@ function songSearch(sName, number){
         var link = songObj.preview_url;
         var album = songObj.album.name;
 
-        console.log(`=======================================================`);
-
-        // Output the artist(s) of the song
+        // Determine if there is just one artist or multiple artists of the song
         if(artistArray.length == 1){
-            console.log(`Artist: ${artist}`);
-        }else{
-            console.log(`Artists: ${artist}`);
+            var numArtist = `Artist:`
         }
-        console.log(`.......................................................`);
+        else{
+            var numArtist = `Artists:`
+        }
 
-        // Output the song's name
-        console.log(`The Song's Name: ${song}`);
-        console.log(`.......................................................`);
-
-
-        // Output a preview link of the song from Spotify
-        console.log(`A Preview Link of "${song}", from Spotify: ${link}`);
-        console.log(`.......................................................`);
-
-        // Output the album that the song is from
-        console.log(`Album containing "${song}": ${album}`);
-
-        console.log(`=======================================================`);
-        // console.log(songObj);
+        var musicLogArr = [`===========================================================================`, 
+        `${numArtist} ${artist}`,
+        `............................................................................`,
+        `The Song's Name: ${song}`,
+        `............................................................................`,
+        `A Preview Link of "${song}", from Spotify: ${link}`,
+        `............................................................................`,
+        `Album containing "${song}": ${album}`,
+        `===========================================================================`];
+        musicLog = musicLogArr.join('\n');
+        console.log(musicLog);
+        outputLog(musicLogArr);
 
         if (process.argv[2] !== "do-what-it-says"){
             artistArray =[];
@@ -184,7 +199,7 @@ function songSearch(sName, number){
                     inquirer.prompt([
                         {
                             type: "confirm",
-                            message: `Would you like me to search for a different "${song}" song?`,
+                            message: `Would you like me to search for a different "${process.argv.slice(3).join(' ')}" song?`,
                             name: "searchAgain",
                             default: true,
                         },
@@ -341,6 +356,8 @@ function movieThis(){
         }
     });
 
+    log();
+
 
 }
 
@@ -359,5 +376,33 @@ function itSays(){
         command = contentArr[0];
         input = contentArr[1];
         choice();
-        });
+    });
+}
+
+function outputLog(outputArr){
+    var fullInputArr = process["argv"].slice(2);
+    var fullInputStr = fullInputArr.join(" ");
+    output = outputArr.join('\n\t');
+    var toLogArr = [`-------------------------------------------------------------------------------`,
+    `Command: ${fullInputStr}`,
+    `Output: \n\t${output}`,
+    `------------------------------------------------------------------------------`,
+    ``];
+    var toLog = toLogArr.join(`\n`);
+    fs.appendFile("log.txt", toLog, function(err) {
+        // append or add text to the end of the file
+        // if playlist.txt does not exist then will create that file
+        
+        // If an error was experienced
+        if (err) {
+            console.log(err);
+
+        }
+    
+        // If no error is experienced, we'll log the phrase below to our node console.
+        else {
+            // return console.log(`Your command and output was logged in log.txt`);
+        }
+        
+    });
 }
