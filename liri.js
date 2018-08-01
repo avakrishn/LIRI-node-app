@@ -44,7 +44,7 @@ if(!command){
             inquirer.prompt([
                 {
                     type: "input",
-                    message: "What song would you like me to search for?",
+                    message: "What song would you like to search for?",
                     name: "songInput"
                   },
             ]).then(function(songRes){
@@ -67,7 +67,7 @@ if(!command){
             inquirer.prompt([
                 {
                     type: "input",
-                    message: "What movie would you like me to search for?",
+                    message: "What movie would you like to search for?",
                     name: "movieInput"
                   },
             ]).then(function(movieRes){
@@ -242,7 +242,12 @@ function songSearch(sName, number){
         }
         var artist = artistArray.join(", ");
         var song =  songObj.name;
-        var link = songObj.preview_url;
+        if(songObj.preview_url !== null){
+            var link = songObj.preview_url;
+        }
+        else{
+            var link = "No preview link available"
+        }
         var album = songObj.album.name;
 
         // Determine if there is just one artist or multiple artists of the song
@@ -275,39 +280,22 @@ function songSearch(sName, number){
                 // Here we ask the user to confirm.
                 {
                     type: "confirm",
-                    message: "Is this the song you are looking for?",
+                    message: "Would you like to add this song to your playlist?",
                     name: "correctSong",
                     default: true,
+                
                 },
+                {
+                    type: "confirm",
+                    message: `Would you like to search for a different "${sName}" song?`,
+                    name: "searchAgain",
+                    default: true,
+                },
+
             ]).then(function(inquirerResponse) {
                 console.log(`===========================================================================`);
                 // console.log(inquirerResponse.correctSong); //if user picked y then correctSong is true if user picked n then correctSong is false
-                if(!inquirerResponse.correctSong){
-                    inquirer.prompt([
-                        {
-                            type: "confirm",
-                            message: `Would you like me to search for a different "${sName}" song?`,
-                            name: "searchAgain",
-                            default: true,
-                        },
-
-                    ]).then(function(inquirerResponse){
-                        if(inquirerResponse.searchAgain){
-                            num++;
-                            if(num<20){
-                                console.log(`===========================================================================`);
-                                console.log(`Here's another song:`);
-                                songSearch(sName, num);
-                            }
-                            else{
-                                console.log(`===========================================================================`);
-                                console.log("Please choose a different song.");
-                                return console.log(`===========================================================================`);
-                            }
-                        }
-                    });
-                }
-                else{
+                if(inquirerResponse.correctSong && inquirerResponse.searchAgain){
                     var songTrack = `"${song}" by ${artist}; `
                     fs.appendFile("playlist.txt", songTrack, function(err) {
                         // append or add text to the end of the file
@@ -322,10 +310,52 @@ function songSearch(sName, number){
                         // If no error is experienced, we'll log the phrase below to our node console.
                         else {
                             console.log(`Awesome! The song, "${song}" by ${artist} was added to your Playlist. To view your Playlist use the command: 'playlist'.`);
-                            return console.log(`===========================================================================`);
-                        }
+                            console.log(`===========================================================================`);
+                            num++;
+                            if(num<20){
+                                console.log(`===========================================================================`);
+                                console.log(`Here's another song:`);
+                                songSearch(sName, num);
+                            }
+                            else{
+                                console.log(`===========================================================================`);
+                                console.log("Please choose a different song.");
+                                console.log(`===========================================================================`);
+                            }
+                        }  
+                    });
+                }
+                else if(inquirerResponse.correctSong){
+                    var songTrack = `"${song}" by ${artist}; `
+                    fs.appendFile("playlist.txt", songTrack, function(err) {
+                        // append or add text to the end of the file
+                        // if playlist.txt does not exist then will create that file
                         
-                        });
+                        // If an error was experienced
+                        if (err) {
+                            console.log(err);
+            
+                        }
+                    
+                        // If no error is experienced, we'll log the phrase below to our node console.
+                        else {
+                            console.log(`Awesome! The song, "${song}" by ${artist} was added to your Playlist. To view your Playlist use the command: 'playlist'.`);
+                            console.log(`===========================================================================`);
+                        }
+                    });
+                }
+                else if(inquirerResponse.searchAgain){
+                    num++;
+                    if(num<20){
+                        console.log(`===========================================================================`);
+                        console.log(`Here's another song:`);
+                        songSearch(sName, num);
+                    }
+                    else{
+                        console.log(`===========================================================================`);
+                        console.log("Please choose a different song.");
+                        console.log(`===========================================================================`);
+                    }
                 }
             }); 
 
@@ -342,26 +372,32 @@ function songPlaylist() {
         if (error) {
             return console.log(error);
         }
-        
-        // console.log(data);
-        //split method creates an array from the string where each element in the array is created by splitting the string at ";"
-        var dataArr = data.split(";");
-        // console.log(dataArr);
-
-        console.log(`===========================================================================`);
-        console.log(`===========================================================================`);
-        console.log(`Your Playlist:`)
-        console.log(`............................................................................`);
-    
-        // We will then display the content of the array as a playlist on each line.
-        for (k =0; k < dataArr.length-1; k++){
-            console.log(`#${parseInt(k)+1}: ${dataArr[k]}`);
-            console.log(`............................................................................`);
+        else if(data == ""){
+            console.log(data);
+            console.log(`===========================================================================`);
+            console.log(`Your Playlist is empty. Please use the spotify-this-song command and search for songs you would like to add to your playlist.`)
+            console.log(`===========================================================================`);
         }
-        console.log(`===========================================================================`);
-        console.log(`===========================================================================`);
-       
-        });
+        else{
+            // console.log(data);
+            //split method creates an array from the string where each element in the array is created by splitting the string at ";"
+            var dataArr = data.split(";");
+            // console.log(dataArr);
+
+            console.log(`===========================================================================`);
+            console.log(`===========================================================================`);
+            console.log(`Your Playlist:`)
+            console.log(`............................................................................`);
+        
+            // We will then display the content of the array as a playlist on each line.
+            for (k =0; k < dataArr.length-1; k++){
+                console.log(`#${parseInt(k)+1}: ${dataArr[k]}`);
+                console.log(`............................................................................`);
+            }
+            console.log(`===========================================================================`);
+            console.log(`===========================================================================`);
+        }
+    });
         
 }
 
@@ -404,7 +440,12 @@ function movieThis(){
             var title = movieResult.Title;
             var year = movieResult.Year;
             var ratingIMDB = movieResult.Ratings[0].Value;
-            var ratingTom = movieResult.Ratings[1].Value;
+            if(movieResult.Ratings[1] !== undefined){
+                var ratingTom = movieResult.Ratings[1].Value;
+            } else{
+                var ratingTom = "No rating as of yet."
+            }
+            
             var country = movieResult.Country;
             var lang = movieResult.Language;
             var plot = movieResult.Plot;
