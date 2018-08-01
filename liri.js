@@ -31,7 +31,7 @@ if(!command){
         {
             type: "list",
             message: "Please choose a command:",
-            choices: ["my-tweets", "spotify-this-song", "playlist", "movie-this","do-what-it-says", "commands"],
+            choices: ["my-tweets", "spotify-this-song", "playlist", "movie-this", "watchlist","do-what-it-says", "commands", "exit"],
             name: "userChoice",
         },
     ]).then(function(inquirerResponse){
@@ -80,6 +80,10 @@ if(!command){
                 movieThis();
             });
         }
+        else if (inquirerResponse.userChoice == "watchlist"){
+            totalInput = "watchlist";
+            movieWatchlist();
+        }
         else if(inquirerResponse.userChoice == "do-what-it-says"){
             totalInput = "do-what-it-says";
             itSays();
@@ -87,6 +91,9 @@ if(!command){
         else if(inquirerResponse.userChoice == "commands"){
             totalInput = "commands";
             commands();
+        }
+        else{
+            return;
         }
     });
 }
@@ -112,6 +119,11 @@ function choice(){
         
         case "movie-this":
             movieThis();
+            break;
+
+        case "watchlist":
+            totalInput = "watchlist";
+            movieWatchlist();
             break;
         
         case "do-what-it-says":
@@ -373,29 +385,35 @@ function songPlaylist() {
             return console.log(error);
         }
         else if(data == ""){
-            console.log(data);
-            console.log(`===========================================================================`);
-            console.log(`Your Playlist is empty. Please use the spotify-this-song command and search for songs you would like to add to your playlist.`)
-            console.log(`===========================================================================`);
+            var playArray = [`===========================================================================`,
+            `Your Playlist is empty. Please use the spotify-this-song command and search for a song you would like to add to your playlist.`,
+            `===========================================================================`];
+            var playLog = playArray.join('\n');
+            console.log(playLog);
+            outputLog(playArray);
         }
         else{
-            // console.log(data);
             //split method creates an array from the string where each element in the array is created by splitting the string at ";"
             var dataArr = data.split(";");
             // console.log(dataArr);
 
-            console.log(`===========================================================================`);
-            console.log(`===========================================================================`);
-            console.log(`Your Playlist:`)
-            console.log(`............................................................................`);
+            var playArray = [`===========================================================================`,
+            `===========================================================================`,
+            `Your Playlist:`,
+            `............................................................................`,
+            ];
         
             // We will then display the content of the array as a playlist on each line.
             for (k =0; k < dataArr.length-1; k++){
-                console.log(`#${parseInt(k)+1}: ${dataArr[k]}`);
-                console.log(`............................................................................`);
+                playArray.push(`#${parseInt(k)+1}: ${dataArr[k]}`);
+                playArray.push(`............................................................................`);
             }
-            console.log(`===========================================================================`);
-            console.log(`===========================================================================`);
+            playArray.push(`===========================================================================`);
+            playArray.push(`===========================================================================`);
+
+            var playLog = playArray.join('\n');
+            console.log(playLog);
+            outputLog(playArray);
         }
     });
         
@@ -474,50 +492,92 @@ function movieThis(){
             console.log(movieLog);
             outputLog(movieLogArr);
 
-            // another way to console log the movie data:
 
-            // console.log(`===========================================================================`);
-            // console.log(`===========================================================================`);
-
-            // // Output the Title of the movie.
-            // console.log(`Title of the movie: ${title}`);
-            // console.log(`..........................................................................`);
-
-            // // Output the Year the movie came out.
-            // console.log(`Year "${title}" came out: ${year}`);
-            // console.log(`..........................................................................`);
-
-            // // Output the IMDB Rating of the movie.
-            // console.log(`IMDB Rating of "${title}": ${ratingIMDB}`);
-            // console.log(`..........................................................................`);
-
-            // // Output the Rotten Tomatoes Rating of the movie.
-            // console.log(`Rotten Tomatoes Rating of "${title}": ${ratingTom}`);
-            // console.log(`..........................................................................`);
-
-            // // Output the Country where the movie was produced.
-            // console.log(`Country where "${title}" was produced: ${country}`);
-            // console.log(`..........................................................................`);
-
-            // // Output the Language of the movie.
-            // console.log(`Language of "${title}": ${lang}`);
-            // console.log(`..........................................................................`);
-
-            // // Output the Plot of the movie.
-            // console.log(`Plot of "${title}": ${plot}`);
-            // console.log(`..........................................................................`);
-
-            // // Output the Actors in the movie.
-            // console.log(`Actors in "${title}": ${actors}`);
-
-            // console.log(`===========================================================================`);
-            // console.log(`===========================================================================`);
+            if (!random){
+                movieArray =[];
+    
+                inquirer.prompt([
+                    // Here we ask the user to confirm.
+                    {
+                        type: "confirm",
+                        message: "Would you like to add this movie to your Watchlist?",
+                        name: "correctMovie",
+                        default: true,
+                    },
+                ]).then(function(inquirerResponse) {
+                    console.log(`===========================================================================`);
+                    if(inquirerResponse.correctMovie){
+                        var movieTicket = `"${title}" (${year}) IMDB Rating: ${ratingIMDB};`;
+                        fs.appendFile("watchlist.txt", movieTicket, function(err) {
+                            // append or add text to the end of the file
+                            // if playlist.txt does not exist then will create that file
+                            
+                            // If an error was experienced
+                            if (err) {
+                                console.log(err);
+                
+                            }
+                        
+                            // If no error is experienced, we'll log the phrase below to our node console.
+                            else {
+                                console.log(`Awesome! The movie, "${title}" was added to your Watchlist. To view your Watchlist use the command: 'watchlist'.`);
+                                console.log(`===========================================================================`);
+        
+                            }  
+                        });
+                    }
+                }); 
+            }
         }
         else{
             console.log(error);
             console.log("Please try again.")
         }
     });
+}
+
+function movieWatchlist() {
+    fs.readFile("watchlist.txt", "utf8", function(error, data) {
+        // data is type: string and contains all the content of playlist.txt
+        // error object will be undefined if no error, but will contain an error if there is an error
+        
+        // If the code experiences any errors it will log the error to the console.
+        if (error) {
+            return console.log(error);
+        }
+        else if(data == ""){
+            var watchArray = [`===========================================================================`,
+            `Your Watchlist is empty. Please use the movie-this command and search for a movie you would like to add to your watchlist.`,
+            `===========================================================================`];
+            var watchLog = watchArray.join('\n');
+            console.log(watchLog);
+            outputLog(watchArray);
+        }
+        else{
+            //split method creates an array from the string where each element in the array is created by splitting the string at ";"
+            var dataArr = data.split(";");
+            // console.log(dataArr);
+
+            var watchArray = [`===========================================================================`,
+            `===========================================================================`,
+            `Your Watchlist:`,
+            `............................................................................`,
+            ];
+        
+            // We will then display the content of the array as a playlist on each line.
+            for (k =0; k < dataArr.length-1; k++){
+                watchArray.push(`#${parseInt(k)+1}: ${dataArr[k]}`);
+                watchArray.push(`............................................................................`);
+            }
+            watchArray.push(`===========================================================================`);
+            watchArray.push(`===========================================================================`);
+
+            var watchLog = watchArray.join('\n');
+            console.log(watchLog);
+            outputLog(watchArray);
+        }
+    });
+        
 }
 
 function itSays(){
@@ -578,6 +638,8 @@ function commands(){
     console.log(`"playlist"_______________________________________playlist of songs created from "spotify-this-song" command`);
     console.log(`...............................................................................................................`);
     console.log(`"movie-this" <movie name here>___________________information about the movie such as year, rating, plot, actors`);
+    console.log(`...............................................................................................................`);
+    console.log(`"watchlist"_______________________________________watchlist of movie created from "movie-this" command`);
     console.log(`...............................................................................................................`);
     console.log(`"do-what-it-says"________________________________random command is executed`);
     console.log(`...............................................................................................................`);
