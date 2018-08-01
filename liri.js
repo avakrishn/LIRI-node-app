@@ -48,7 +48,11 @@ if(!command){
                     name: "songInput"
                   },
             ]).then(function(songRes){
-                input = songRes.songInput;
+                if(songRes.songInput !== ""){
+                    input = songRes.songInput;
+                }else{
+                    input = undefined;
+                }
                 totalInput = command + " " + input;
                 spotifyThis();
             });
@@ -67,7 +71,11 @@ if(!command){
                     name: "movieInput"
                   },
             ]).then(function(movieRes){
-                input = movieRes.movieInput;
+                if(movieRes.movieInput !== ""){
+                    input = movieRes.movieInput;
+                }else{
+                    input = undefined;
+                }
                 totalInput = command + " " + input;
                 movieThis();
             });
@@ -164,7 +172,7 @@ function spotifyThis(){
             var album = songObj.album.name;
 
             console.log(`===========================================================================`);
-            console.log(`Please enter a song name after the command 'spotify-this-song' to get an output like this:`)
+            console.log(`Please enter a song name after the command 'spotify-this-song' to get an output like this:`);
 
             var musicLogArr = [`===========================================================================`,
             `===========================================================================`, 
@@ -363,6 +371,8 @@ function movieThis(){
         movieName = "mr+nobody"
         input = "";
         totalInput = command + " " + input;
+        console.log(`===========================================================================`);
+        console.log(`Please enter a movie name after the command 'movie-this' to get an output like this:`)
     }
     // if the user selects the do-what-it-says command or if the user uses the inquirer prompt instead of writing a command argument as process.argv[2] then
     else if(process.argv[2] == "do-what-it-says" || !process.argv[2]){
