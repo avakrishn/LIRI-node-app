@@ -17,44 +17,79 @@ var client = new Twitter(keys.twitter);
 
 var command = process.argv[2];
 var input = process.argv[3];
+var totalInput;
 
 var songName = "";
 var movieName ="";
 var artistArray = [];
 var num = 0;
+var random = false;
+
 
 if(!command){
-    commands();
-    // please select an option
-    //would you like a list of the commands
-    
+    inquirer.prompt([
+        {
+            type: "list",
+            message: "Please choose a command:",
+            choices: ["my-tweets", "spotify-this-song", "playlist", "movie-this","do-what-it-says", "commands"],
+            name: "userChoice",
+        },
+    ]).then(function(inquirerResponse){
+        if(inquirerResponse.userChoice == "my-tweets"){
+            totalInput = "my-tweets";
+            tweets();
+        }
+        else if(inquirerResponse.userChoice == "spotify-this-song"){
+            command = "spotify-this-song";
+            inquirer.prompt([
+                {
+                    type: "input",
+                    message: "What song would you like me to search for?",
+                    name: "songInput"
+                  },
+            ]).then(function(songRes){
+                input = songRes.songInput;
+                totalInput = command + " " + input;
+                spotifyThis();
+            });
+        }
+        else if(inquirerResponse.userChoice == "playlist"){
+            totalInput = "playlist";
+            songPlaylist();
+            
+        }
+        else if(inquirerResponse.userChoice == "movie-this"){
+            command = "movie-this";
+            inquirer.prompt([
+                {
+                    type: "input",
+                    message: "What movie would you like me to search for?",
+                    name: "movieInput"
+                  },
+            ]).then(function(movieRes){
+                input = movieRes.movieInput;
+                totalInput = command + " " + input;
+                movieThis();
+            });
+        }
+        else if(inquirerResponse.userChoice == "do-what-it-says"){
+            totalInput = "do-what-it-says";
+            itSays();
+        }
+        else if(inquirerResponse.userChoice == "commands"){
+            totalInput = "commands";
+            commands();
+        }
+    });
 }
 else{
     choice();
 }
 
-function commands(){
-    console.log(`===============================================================================================================`);
-    console.log(`Here are the list of possible commands and their output:`);
-    console.log(`...............................................................................................................`);
-    console.log(`Command__________________________________________Output________________________________________________________`);
-    console.log(`...............................................................................................................`);
-    console.log(`"my-tweets"______________________________________last 20 tweets and when they were created`);
-    console.log(`...............................................................................................................`);
-    console.log(`"spotify-this-song" <song name here>_____________information about the song such as artist, album, preview link`);
-    console.log(`...............................................................................................................`);
-    console.log(`"playlist"_______________________________________playlist of songs created from "spotify-this-song" command`);
-    console.log(`...............................................................................................................`);
-    console.log(`"movie-this" <movie name here>___________________information about the movie such as year, rating, plot, actors`);
-    console.log(`...............................................................................................................`);
-    console.log(`"do-what-it-says"________________________________random command is executed`);
-    console.log(`...............................................................................................................`);
-    console.log(`===============================================================================================================`);
-}
-
 function choice(){
     switch (command) {
         case "my-tweets":
+            totalInput = "my-tweets";
             tweets();
             break;
         
@@ -63,6 +98,7 @@ function choice(){
             break;
     
         case "playlist":
+            totalInput = "playlist";
             songPlaylist();
             break;
         
@@ -71,7 +107,13 @@ function choice(){
             break;
         
         case "do-what-it-says":
+            totalInput = "do-what-it-says";
             itSays();
+            break;
+
+        case "commands":
+            totalInput = "commands";
+            commands();
             break;
     }
 }
@@ -83,14 +125,22 @@ function tweets(){
         // console.log(response);
         if (!error) {
             console.log(`===========================================================================`);
-            for (l=0; l<20; l++){
+            console.log(`===========================================================================`);
+            if(20 > tweets.length){
+                tweetNum = tweets.length
+            }
+            else{
+                tweetNum = 20
+            }
+            for (l=0; l<tweetNum; l++){
                 var tweet = tweets[l].text;
                 var dateCreated = tweets[l].user.created_at;
                 console.log(`Tweet #${l+1}: ${tweet}`);
                 console.log(`Date created: ${dateCreated}`);
                 console.log("............................................................................");
             }
-            console.log(`===========================================================================`)
+            console.log(`===========================================================================`);
+            console.log(`===========================================================================`);
         //   console.log(tweets);
         }
       });
@@ -98,8 +148,10 @@ function tweets(){
 
 
 function spotifyThis(){
+    //  if user types in command "spotify-this-song" withiout specifying a song as the next argument
     if(input === undefined){
-        songName = "The Sign"
+        songName = "The Sign";
+        totalInput = command;
         spotify.search({ type: 'track', query: songName }, function(error, data){
             if (error) {
             return console.log('Error occurred: ' + error);
@@ -114,7 +166,8 @@ function spotifyThis(){
             console.log(`===========================================================================`);
             console.log(`Please enter a song name after the command 'spotify-this-song' to get an output like this:`)
 
-            var musicLogArr = [`===========================================================================`, 
+            var musicLogArr = [`===========================================================================`,
+            `===========================================================================`, 
             `Artist: ${artist}`,
             `............................................................................`,
             `The Song's Name: ${song}`,
@@ -122,6 +175,7 @@ function spotifyThis(){
             `A Preview Link of "${song}", from Spotify: ${link}`,
             `............................................................................`,
             `Album containing "${song}": ${album}`,
+            `===========================================================================`,
             `===========================================================================`];
             musicLog = musicLogArr.join('\n');
             console.log(musicLog);
@@ -149,20 +203,23 @@ function spotifyThis(){
         
         });
     }
-    else if (process.argv[2] === "do-what-it-says"){
-        songSearch(input, num);
+    // if the user selects the do-what-it-says command or if the user uses the inquirer prompt instead of writing a command argument as process.argv[2] then
+    else if (process.argv[2] === "do-what-it-says" || !process.argv[2]){
+        songName = input;
+        songSearch(songName, num);
     }
     else{
-        var songArr = process.argv.slice(3);
-        songName = songArr.join(' ');
-        
+        songName = process.argv.slice(3).join(' ');
+        input = songName;
+        totalInput = command + " " + input;
+        songSearch(songName, num);
         // alternate way:
         // for(i=3; i<pro.length; i++){
         //     songName += pro[i] + " ";
         // }
-
-        songSearch(songName, num);
     }
+    
+
 }
 
 function songSearch(sName, number){
@@ -188,7 +245,8 @@ function songSearch(sName, number){
             var numArtist = `Artists:`
         }
 
-        var musicLogArr = [`===========================================================================`, 
+        var musicLogArr = [`===========================================================================`,
+        `===========================================================================`, 
         `${numArtist} ${artist}`,
         `............................................................................`,
         `The Song's Name: ${song}`,
@@ -196,12 +254,13 @@ function songSearch(sName, number){
         `A Preview Link of "${song}", from Spotify: ${link}`,
         `............................................................................`,
         `Album containing "${song}": ${album}`,
+        `===========================================================================`,
         `===========================================================================`];
         musicLog = musicLogArr.join('\n');
         console.log(musicLog);
         outputLog(musicLogArr);
 
-        if (process.argv[2] !== "do-what-it-says"){
+        if (!random){
             artistArray =[];
 
             inquirer.prompt([
@@ -213,13 +272,13 @@ function songSearch(sName, number){
                     default: true,
                 },
             ]).then(function(inquirerResponse) {
-                console.log(`=======================================================`);
+                console.log(`===========================================================================`);
                 // console.log(inquirerResponse.correctSong); //if user picked y then correctSong is true if user picked n then correctSong is false
                 if(!inquirerResponse.correctSong){
                     inquirer.prompt([
                         {
                             type: "confirm",
-                            message: `Would you like me to search for a different "${process.argv.slice(3).join(' ')}" song?`,
+                            message: `Would you like me to search for a different "${sName}" song?`,
                             name: "searchAgain",
                             default: true,
                         },
@@ -228,14 +287,14 @@ function songSearch(sName, number){
                         if(inquirerResponse.searchAgain){
                             num++;
                             if(num<20){
-                                console.log(`=======================================================`);
+                                console.log(`===========================================================================`);
                                 console.log(`Here's another song:`);
-                                songSearch(songName, num);
+                                songSearch(sName, num);
                             }
                             else{
-                                console.log(`=======================================================`);
+                                console.log(`===========================================================================`);
                                 console.log("Please choose a different song.");
-                                return console.log(`=======================================================`);
+                                return console.log(`===========================================================================`);
                             }
                         }
                     });
@@ -255,7 +314,7 @@ function songSearch(sName, number){
                         // If no error is experienced, we'll log the phrase below to our node console.
                         else {
                             console.log(`Awesome! The song, "${song}" by ${artist} was added to your Playlist. To view your Playlist use the command: 'playlist'.`);
-                            return console.log(`=======================================================`);
+                            return console.log(`===========================================================================`);
                         }
                         
                         });
@@ -276,37 +335,45 @@ function songPlaylist() {
             return console.log(error);
         }
         
-        console.log(data);
+        // console.log(data);
         //split method creates an array from the string where each element in the array is created by splitting the string at ";"
         var dataArr = data.split(";");
-        console.log(dataArr);
+        // console.log(dataArr);
 
-        console.log(`=======================================================`);
+        console.log(`===========================================================================`);
+        console.log(`===========================================================================`);
         console.log(`Your Playlist:`)
-        console.log(`.......................................................`);
+        console.log(`............................................................................`);
     
         // We will then display the content of the array as a playlist on each line.
         for (k =0; k < dataArr.length-1; k++){
             console.log(`#${parseInt(k)+1}: ${dataArr[k]}`);
-            console.log(`.......................................................`);
+            console.log(`............................................................................`);
         }
-        console.log(`=======================================================`);
+        console.log(`===========================================================================`);
+        console.log(`===========================================================================`);
        
         });
         
 }
 
 function movieThis(){
+    //  if user types in command "movie-this" withiout specifying a movie as the next argument
     if (input === undefined){
         movieName = "mr+nobody"
+        input = "";
+        totalInput = command + " " + input;
     }
-    else if(process.argv[2] == "do-what-it-says"){
+    // if the user selects the do-what-it-says command or if the user uses the inquirer prompt instead of writing a command argument as process.argv[2] then
+    else if(process.argv[2] == "do-what-it-says" || !process.argv[2]){
         var movieArr = input.split(" ");
         movieName = movieArr.join("+");
     }
     else{
         var movieArr = process.argv.slice(3);
         movieName = movieArr.join("+");
+        input = movieArr.join(" ");
+        totalInput = command + " " + input;
     }
     
 
@@ -333,52 +400,73 @@ function movieThis(){
             var plot = movieResult.Plot;
             var actors = movieResult.Actors;
 
-            console.log(`=======================================================`);
-            console.log(`=======================================================`);
+            var movieLogArr = [`===========================================================================`,
+            `===========================================================================`, 
+            `Title of the movie: ${title}`,
+            `............................................................................`,
+            `Year "${title}" came out: ${year}`,
+            `............................................................................`,
+            `IMDB Rating of "${title}": ${ratingIMDB}`,
+            `............................................................................`,
+            `Rotten Tomatoes Rating of "${title}": ${ratingTom}`,
+            `............................................................................`,
+            `Country where "${title}" was produced: ${country}`,
+            `............................................................................`,
+            `Language of "${title}": ${lang}`,
+            `............................................................................`,
+            `Plot of "${title}": ${plot}`,
+            `............................................................................`,
+            `Actors in "${title}": ${actors}`,
+            `===========================================================================`,
+            `===========================================================================`];
+            movieLog = movieLogArr.join('\n');
+            console.log(movieLog);
+            outputLog(movieLogArr);
 
-            // Output the Title of the movie.
-            console.log(`Title of the movie: ${title}`);
-            console.log(`.......................................................`);
+            // another way to console log the movie data:
 
-            // Output the Year the movie came out.
-            console.log(`Year "${title}" came out: ${year}`);
-            console.log(`.......................................................`);
+            // console.log(`===========================================================================`);
+            // console.log(`===========================================================================`);
 
-            // Output the IMDB Rating of the movie.
-            console.log(`IMDB Rating of "${title}": ${ratingIMDB}`);
-            console.log(`.......................................................`);
+            // // Output the Title of the movie.
+            // console.log(`Title of the movie: ${title}`);
+            // console.log(`..........................................................................`);
 
-            // Output the Rotten Tomatoes Rating of the movie.
-            console.log(`Rotten Tomatoes Rating of "${title}": ${ratingTom}`);
-            console.log(`.......................................................`);
+            // // Output the Year the movie came out.
+            // console.log(`Year "${title}" came out: ${year}`);
+            // console.log(`..........................................................................`);
 
-            // Output the Country where the movie was produced.
-            console.log(`Country where "${title}" was produced: ${country}`);
-            console.log(`.......................................................`);
+            // // Output the IMDB Rating of the movie.
+            // console.log(`IMDB Rating of "${title}": ${ratingIMDB}`);
+            // console.log(`..........................................................................`);
 
-            // Output the Language of the movie.
-            console.log(`Language of "${title}": ${lang}`);
-            console.log(`.......................................................`);
+            // // Output the Rotten Tomatoes Rating of the movie.
+            // console.log(`Rotten Tomatoes Rating of "${title}": ${ratingTom}`);
+            // console.log(`..........................................................................`);
 
-            // Output the Plot of the movie.
-            console.log(`Plot of "${title}": ${plot}`);
-            console.log(`.......................................................`);
+            // // Output the Country where the movie was produced.
+            // console.log(`Country where "${title}" was produced: ${country}`);
+            // console.log(`..........................................................................`);
 
-            // Output the Actors in the movie.
-            console.log(`Actors in "${title}": ${actors}`);
+            // // Output the Language of the movie.
+            // console.log(`Language of "${title}": ${lang}`);
+            // console.log(`..........................................................................`);
 
-            console.log(`=======================================================`);
-            console.log(`=======================================================`);
+            // // Output the Plot of the movie.
+            // console.log(`Plot of "${title}": ${plot}`);
+            // console.log(`..........................................................................`);
+
+            // // Output the Actors in the movie.
+            // console.log(`Actors in "${title}": ${actors}`);
+
+            // console.log(`===========================================================================`);
+            // console.log(`===========================================================================`);
         }
         else{
             console.log(error);
             console.log("Please try again.")
         }
     });
-
-    log();
-
-
 }
 
 function itSays(){
@@ -395,16 +483,15 @@ function itSays(){
         contentArr = content.split(',');
         command = contentArr[0];
         input = contentArr[1];
+        random = true;
         choice();
     });
 }
 
 function outputLog(outputArr){
-    var fullInputArr = process["argv"].slice(2);
-    var fullInputStr = fullInputArr.join(" ");
     output = outputArr.join('\n\t');
     var toLogArr = [`-------------------------------------------------------------------------------`,
-    `Command: ${fullInputStr}`,
+    `Command: ${totalInput}`,
     `Output: \n\t${output}`,
     `------------------------------------------------------------------------------`,
     ``];
@@ -425,4 +512,23 @@ function outputLog(outputArr){
         }
         
     });
+}
+
+function commands(){
+    console.log(`===============================================================================================================`);
+    console.log(`Here are the list of possible commands and their output:`);
+    console.log(`...............................................................................................................`);
+    console.log(`Command__________________________________________Output________________________________________________________`);
+    console.log(`...............................................................................................................`);
+    console.log(`"my-tweets"______________________________________last 20 tweets and when they were created`);
+    console.log(`...............................................................................................................`);
+    console.log(`"spotify-this-song" <song name here>_____________information about the song such as artist, album, preview link`);
+    console.log(`...............................................................................................................`);
+    console.log(`"playlist"_______________________________________playlist of songs created from "spotify-this-song" command`);
+    console.log(`...............................................................................................................`);
+    console.log(`"movie-this" <movie name here>___________________information about the movie such as year, rating, plot, actors`);
+    console.log(`...............................................................................................................`);
+    console.log(`"do-what-it-says"________________________________random command is executed`);
+    console.log(`...............................................................................................................`);
+    console.log(`===============================================================================================================`);
 }
