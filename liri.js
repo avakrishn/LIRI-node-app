@@ -144,8 +144,10 @@ function tweets(){
     client.get('statuses/user_timeline', params, function(error, tweets, response) {
         // console.log(response);
         if (!error) {
-            console.log(`===========================================================================`);
-            console.log(`===========================================================================`);
+
+            var tweetLogArr = [`===========================================================================`,
+            `===========================================================================`];
+    
             if(20 > tweets.length){
                 tweetNum = tweets.length
             }
@@ -154,14 +156,19 @@ function tweets(){
             }
             for (l=0; l<tweetNum; l++){
                 var tweet = tweets[l].text;
-                var dateCreated = tweets[l].user.created_at;
-                console.log(`Tweet #${l+1}: ${tweet}`);
-                console.log(`Date created: ${dateCreated}`);
-                console.log("............................................................................");
+                var dateInitial = tweets[l].user.created_at.slice(0,10);
+                var dateFinal =  tweets[l].user.created_at.slice(-4);
+                var dateCreated = dateInitial + " " + dateFinal;
+                tweetLogArr.push(`Tweet #${l+1}: ${tweet}`);
+                tweetLogArr.push(`Date created: ${dateCreated}`);
+                tweetLogArr.push("............................................................................");
             }
-            console.log(`===========================================================================`);
-            console.log(`===========================================================================`);
-        //   console.log(tweets);
+            tweetLogArr.push(`===========================================================================`);
+            tweetLogArr.push(`===========================================================================`);
+            //   console.log(tweets);
+            tweetLog = tweetLogArr.join('\n');
+            console.log(tweetLog);
+            outputLog(tweetLogArr);
         }
       });
 }
@@ -177,7 +184,7 @@ function spotifyThis(){
             return console.log('Error occurred: ' + error);
             }
             var songObj = data.tracks.items[5];
-        //  console.log(data.tracks.items[5]); 
+            //  console.log(data.tracks.items[5]); 
             var artist = songObj.artists[0].name;
             var song =  songObj.name;
             var link = songObj.preview_url;
@@ -200,27 +207,6 @@ function spotifyThis(){
             musicLog = musicLogArr.join('\n');
             console.log(musicLog);
             outputLog(musicLogArr);
-
-            // another way to console log:
-
-
-            // console.log(`=======================================================`);
-            // // Output the artist(s) of the song
-            // console.log(`Artist: ${artist}`);
-            // console.log(`.......................................................`);
-
-            // // Output the song's name
-            // console.log(`The Song's Name: ${song}`);
-            // console.log(`.......................................................`);
-
-            // // Output a preview link of the song from Spotify
-            // console.log(`A Preview Link of "${song}", from Spotify: ${link}`);
-            // console.log(`.......................................................`);
-
-            // // Output the album that the song is from
-            // console.log(`Album containing "${song}": ${album}`);
-            // console.log(`=======================================================`);
-        
         });
     }
     // if the user selects the do-what-it-says command or if the user uses the inquirer prompt instead of writing a command argument as process.argv[2] then
@@ -238,8 +224,6 @@ function spotifyThis(){
         //     songName += pro[i] + " ";
         // }
     }
-    
-
 }
 
 function songSearch(sName, number){
@@ -248,7 +232,11 @@ function songSearch(sName, number){
         return console.log('Error occurred: ' + error);
         }
         var songObj = data.tracks.items[number];
-    //  console.log(data.tracks.items[5]); 
+        
+        // the null specifies that there will not be a replacer function. The 2 represents 2 indents in order to make it more presentable
+        console.log(JSON.stringify(response, null, 2));
+
+        //  console.log(data.tracks.items[5]); 
         for(j = 0; j < songObj["artists"].length; j++){
             artistArray.push(songObj.artists[j].name);
         }
@@ -338,7 +326,7 @@ function songSearch(sName, number){
                     });
                 }
                 else if(inquirerResponse.correctSong){
-                    var songTrack = `"${song}" by ${artist}; `
+                    var songTrack = `"${song}" by ${artist};`;
                     fs.appendFile("playlist.txt", songTrack, function(err) {
                         // append or add text to the end of the file
                         // if playlist.txt does not exist then will create that file
@@ -375,7 +363,7 @@ function songSearch(sName, number){
     });
 }
 
-function songPlaylist() {
+function songPlaylist(){
     fs.readFile("playlist.txt", "utf8", function(error, data) {
         // data is type: string and contains all the content of playlist.txt
         // error object will be undefined if no error, but will contain an error if there is an error
@@ -599,6 +587,31 @@ function itSays(){
     });
 }
 
+function commands(){
+    var commandLogArray = [
+        `===============================================================================================================`,
+        `Here are the list of possible commands and their output:`,
+        `...............................................................................................................`,
+        `Command__________________________________________Output________________________________________________________`,
+        `...............................................................................................................`,
+        `"my-tweets"______________________________________last 20 tweets and when they were created`,
+        `...............................................................................................................`,
+        `"spotify-this-song" <song name here>_____________information about the song such as artist, album, preview link`,
+        `...............................................................................................................`,
+        `"playlist"_______________________________________playlist of songs created from "spotify-this-song" command`,
+        `...............................................................................................................`,
+        `"movie-this" <movie name here>___________________information about the movie such as year, rating, plot, actors`,
+        `...............................................................................................................`,
+        `"watchlist"_______________________________________watchlist of movie created from "movie-this" command`,
+        `...............................................................................................................`,
+        `"do-what-it-says"________________________________random command is executed`,
+        `...............................................................................................................`,
+        `===============================================================================================================`];
+    var commandLog = commandLogArray.join('\n');
+    console.log(commandLog);
+    outputLog(commandLogArray);
+}
+
 function outputLog(outputArr){
     output = outputArr.join('\n\t');
     var toLogArr = [`-------------------------------------------------------------------------------`,
@@ -623,25 +636,4 @@ function outputLog(outputArr){
         }
         
     });
-}
-
-function commands(){
-    console.log(`===============================================================================================================`);
-    console.log(`Here are the list of possible commands and their output:`);
-    console.log(`...............................................................................................................`);
-    console.log(`Command__________________________________________Output________________________________________________________`);
-    console.log(`...............................................................................................................`);
-    console.log(`"my-tweets"______________________________________last 20 tweets and when they were created`);
-    console.log(`...............................................................................................................`);
-    console.log(`"spotify-this-song" <song name here>_____________information about the song such as artist, album, preview link`);
-    console.log(`...............................................................................................................`);
-    console.log(`"playlist"_______________________________________playlist of songs created from "spotify-this-song" command`);
-    console.log(`...............................................................................................................`);
-    console.log(`"movie-this" <movie name here>___________________information about the movie such as year, rating, plot, actors`);
-    console.log(`...............................................................................................................`);
-    console.log(`"watchlist"_______________________________________watchlist of movie created from "movie-this" command`);
-    console.log(`...............................................................................................................`);
-    console.log(`"do-what-it-says"________________________________random command is executed`);
-    console.log(`...............................................................................................................`);
-    console.log(`===============================================================================================================`);
 }
