@@ -4,21 +4,27 @@ require("dotenv").config();
 // Grab the fs package to handle read/write/append
 var fs = require("fs");
 
-
+// Grab the request, twitter, node-spotify-api, and inquirer packages
 var request = require("request");
 var Twitter = require('twitter');
 var Spotify = require('node-spotify-api');
 var inquirer = require("inquirer");
 
+// import keys for twitter and node-spotify api from keys.js
 var keys = require("./keys.js");
 
+// 
 var spotify = new Spotify(keys.spotify);
 var client = new Twitter(keys.twitter);
 
-var command = process.argv[2];
-var input = process.argv[3];
-var totalInput;
+//---------------------------------------------Global Variables
 
+// after node liri.js the user inputs the command which this is the 1st argument
+var command = process.argv[2];
+// after command if applicable user will include write a movie name or song name and that will be the 2nd argument
+var input = process.argv[3];
+
+var totalInput;
 var songName = "";
 var movieName ="";
 var artistArray = [];
@@ -26,6 +32,9 @@ var num = 0;
 var random = false;
 
 
+//---------------------------------------------Start of Code
+
+//if user does not specify a command then user will choose a command using the inquirer prompt type: list
 if(!command){
     inquirer.prompt([
         {
@@ -101,6 +110,9 @@ else{
     choice();
 }
 
+//----------------------------------------------Functions
+
+// depending on what command is typed by the user the respective function is run
 function choice(){
     switch (command) {
         case "my-tweets":
@@ -138,7 +150,7 @@ function choice(){
     }
 }
 
-// This will show my last 20 tweets and when they were created at in the terminal/bash window.
+// this will show my last 20 tweets and when they were created at in the terminal/bash window.
 function tweets(){
     var params = {screen_name: 'LIRI51505595'};
     client.get('statuses/user_timeline', params, function(error, tweets, response) {
@@ -173,7 +185,7 @@ function tweets(){
       });
 }
 
-
+// gives user the information based on the song that the user typed
 function spotifyThis(){
     //  if user types in command "spotify-this-song" withiout specifying a song as the next argument
     if(input === undefined){
@@ -226,6 +238,7 @@ function spotifyThis(){
     }
 }
 
+// function runs only when there is a song name specified by the user
 function songSearch(sName, number){
     spotify.search({ type: 'track', query: sName }, function(error, data){
         if (error) {
@@ -233,8 +246,9 @@ function songSearch(sName, number){
         }
         var songObj = data.tracks.items[number];
         
+        // in pretty-print format
         // the null specifies that there will not be a replacer function. The 2 represents 2 indents in order to make it more presentable
-        console.log(JSON.stringify(response, null, 2));
+        console.log(JSON.stringify(data, null, 2));
 
         //  console.log(data.tracks.items[5]); 
         for(j = 0; j < songObj["artists"].length; j++){
@@ -363,6 +377,7 @@ function songSearch(sName, number){
     });
 }
 
+// shows user their playlist they created through using the spotify-this-song command
 function songPlaylist(){
     fs.readFile("playlist.txt", "utf8", function(error, data) {
         // data is type: string and contains all the content of playlist.txt
@@ -407,6 +422,7 @@ function songPlaylist(){
         
 }
 
+// searches the movie name given by the user if specified else searches and outputs information for a default movie
 function movieThis(){
     //  if user types in command "movie-this" withiout specifying a movie as the next argument
     if (input === undefined){
@@ -524,6 +540,7 @@ function movieThis(){
     });
 }
 
+// shows user their watchlist they created through using the movie-this command
 function movieWatchlist() {
     fs.readFile("watchlist.txt", "utf8", function(error, data) {
         // data is type: string and contains all the content of playlist.txt
@@ -568,6 +585,7 @@ function movieWatchlist() {
         
 }
 
+// reads the file random.txt and calls the specific function associated with the command on that file
 function itSays(){
       // Using the `fs` Node package, LIRI will take the text inside of random.txt and then use it to call one of LIRI's commands.
     fs.readFile("random.txt", "utf8", function(error, content) {
@@ -587,6 +605,7 @@ function itSays(){
     });
 }
 
+// displays all the possible commands and their outputs
 function commands(){
     var commandLogArray = [
         `===============================================================================================================`,
@@ -637,3 +656,5 @@ function outputLog(outputArr){
         
     });
 }
+
+// to do: need to link
