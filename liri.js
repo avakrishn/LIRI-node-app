@@ -189,13 +189,13 @@ function tweets(){
 function spotifyThis(){
     //  if user types in command "spotify-this-song" withiout specifying a song as the next argument
     if(input === undefined){
-        songName = "The Sign";
+        songName = "The Sign Ace of Base";
         totalInput = command;
         spotify.search({ type: 'track', query: songName }, function(error, data){
             if (error) {
             return console.log('Error occurred: ' + error);
             }
-            var songObj = data.tracks.items[5];
+            var songObj = data.tracks.items[0];
             //  console.log(data.tracks.items[5]); 
             var artist = songObj.artists[0].name;
             var song =  songObj.name;
